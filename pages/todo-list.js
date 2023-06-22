@@ -8,7 +8,6 @@ import { TASKTYPE } from "../constants/task";
 import SwipeListItem from "../components/SwipeList";
 import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "axios";
-import { css } from "@emotion/react";
 
 const taskStatus = [TASKTYPE.TODO, TASKTYPE.DOING, TASKTYPE.DONE];
 
@@ -18,17 +17,18 @@ export default function Dashboard() {
   } = useAppAuthContext();
   const [taskType, setTaskType] = useState(taskStatus[0]);
   const [taskList, setTaskList] = useState([]);
+  const [taskListWithGroup, setTaskListWithGroup] = useState([]);
   const [isMoreTaskList, setIsMoreTaskList] = useState(false);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuth) getTask();
+    if (isAuth) getTaskData();
   }, [isAuth, page]);
 
   useEffect(() => {
     if (isAuth) {
-      getTask();
+      getTaskData();
     }
   }, [taskType]);
 
@@ -45,6 +45,7 @@ export default function Dashboard() {
 
   const handleChangeTabs = (index) => {
     setTaskList([]);
+    setTaskListWithGroup([]);
     setIsMoreTaskList(false);
     setPage(0);
     setTaskType(taskStatus[index]);
@@ -58,7 +59,7 @@ export default function Dashboard() {
     setPage(page + 1);
   };
 
-  const getTask = async () => {
+  const getTaskData = async () => {
     setLoading(true);
     const resp = await axios.get("/api/get-task", {
       params: {
@@ -67,15 +68,36 @@ export default function Dashboard() {
         status: taskType
       }
     });
-
-    console.log("resp", resp);
+    const taskListAll = [...taskList, ...resp.data.tasks];
+    const groupByCreateDate = [...taskListWithGroup];
+    // console.log("resp", resp);
     // console.log("resp.data?.totalPages < page", resp.data?.totalPages, page);
     if (resp.data?.totalPages > page) {
       setIsMoreTaskList(true);
     } else {
       setIsMoreTaskList(false);
     }
-    setTaskList([...taskList, ...resp.data.tasks]);
+
+    const groupsByCreatedAt = taskListAll.reduce((groups, task) => {
+      const date = task.createdAt;
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(task);
+      return groups;
+    }, {});
+
+    const groupArrays = Object.keys(groupsByCreatedAt).map((date) => {
+      return {
+        date,
+        tasks: groupsByCreatedAt[date]
+      };
+    });
+
+    // const groupedMap = groupBy(taskList, (v) => new Object(v.createdAt));
+    console.log("groupByCreateDate =", groupByCreateDate);
+    setTaskList(taskListAll);
+    setTaskListWithGroup(groupArrays);
     setLoading(false);
   };
 
@@ -84,7 +106,8 @@ export default function Dashboard() {
     return <></>;
   }
 
-  // console.log("taskList", taskList);
+  console.log("taskListWithGroup", taskListWithGroup);
+  console.log("taskListWithGroup.length", taskListWithGroup.length);
 
   return (
     <Box padding="15px" height="100vh" width="100%" bg="linear-gradient(-135deg, #c850c0, #4158d0)">
@@ -109,9 +132,7 @@ export default function Dashboard() {
 
       <Tabs backgroundColor="#ababab" zIndex={1} onChange={handleChangeTabs}>
         <TabList>
-          <Tab id={TASKTYPE.TODO} _selected={{ color: "white", bg: "blue.500" }}>
-            To-do
-          </Tab>
+          <Tab _selected={{ color: "white", bg: "blue.500" }}>To-do</Tab>
           <Tab _selected={{ color: "white", bg: "blue.500" }}>Doing</Tab>
           <Tab _selected={{ color: "white", bg: "blue.500" }}>Done</Tab>
         </TabList>
@@ -126,7 +147,7 @@ export default function Dashboard() {
                 minHeight="calc(100vh - 182px)"
                 maxHeight="calc(100vh - 182px)"
                 overflowY="auto"
-                data-id="tab "
+                data-id={`tab ${status}`}
               >
                 <InfiniteScroll
                   dataLength={taskList.length}
@@ -140,8 +161,15 @@ export default function Dashboard() {
                     </div>
                   }
                 >
-                  {taskList?.map((tasks, index) => {
-                    return <SwipeListItem key={index} name={tasks.title} />;
+                  {taskListWithGroup?.map((group, index) => {
+                    return (
+                      <Box>
+                        <Text>{group.date}</Text>
+                        {group.tasks.map((task, index) => {
+                          return <SwipeListItem key={index} name={task.title} />;
+                        })}
+                      </Box>
+                    );
                   })}
                 </InfiniteScroll>
               </Box>
