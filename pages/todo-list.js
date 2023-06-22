@@ -3,10 +3,10 @@ import Router from "next/router";
 
 import { removeToken } from "../lib/token";
 import { useAppAuthContext } from "../context/authContext";
-import { Tabs, TabList, TabPanels, Tab, TabPanel, Text, Box } from "@chakra-ui/react";
+import { Tabs, TabList, TabPanels, Tab, TabPanel, Box } from "@chakra-ui/react";
 import { TASKTYPE } from "../constants/task";
 import SwipeListItem from "../components/SwipeList";
-import InfiniteScroll from "react-infinite-scroller";
+import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "axios";
 
 export default function Dashboard() {
@@ -15,11 +15,13 @@ export default function Dashboard() {
   } = useAppAuthContext();
   const [taskType, setTaskType] = useState(TASKTYPE.TODO);
   const [taskList, setTaskList] = useState([]);
+  const [isMoreTaskList, setIsMoreTaskList] = useState(false);
   const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAuth) getTask();
-  }, [isAuth, taskType]);
+  }, [isAuth, taskType, page]);
 
   const redirectToLogin = () => {
     Router.push("/auth/login");
@@ -32,11 +34,16 @@ export default function Dashboard() {
     redirectToLogin();
   };
 
-  const loadFunc = (data) => {
-    console.log("loadmore", data);
+  const loadFunc = () => {
+    if (loading) {
+      return;
+    }
+    setLoading(true);
+    setPage(page + 1);
   };
 
   const getTask = async () => {
+    setLoading(true);
     const resp = await axios.get("/api/get-task", {
       params: {
         page,
@@ -45,7 +52,14 @@ export default function Dashboard() {
     });
 
     console.log("resp", resp);
-    setTaskList(resp.data.tasks);
+    // console.log("resp.data?.totalPages < page", resp.data?.totalPages, page);
+    if (resp.data?.totalPages > page) {
+      setIsMoreTaskList(true);
+    } else {
+      setIsMoreTaskList(false);
+    }
+    setTaskList([...taskList, ...resp.data.tasks]);
+    setLoading(false);
   };
 
   if (!isAuth) {
@@ -53,7 +67,7 @@ export default function Dashboard() {
     return <></>;
   }
 
-  console.log("taskList", taskList);
+  // console.log("taskList", taskList);
 
   return (
     <>
@@ -82,11 +96,13 @@ export default function Dashboard() {
 
         <TabPanels>
           <TabPanel>
-            <Box className="List">
+            <Box id="scrollableDiv" className="List" height="100%" maxHeight="calc(100vh - 182px)" overflowY="auto">
               <InfiniteScroll
-                pageStart={page}
-                loadMore={loadFunc}
-                hasMore={true || false}
+                dataLength={taskList.length}
+                next={loadFunc}
+                hasMore={isMoreTaskList}
+                scrollableTarget="scrollableDiv"
+                scrollThreshold={1}
                 loader={
                   <div className="loader" key={0}>
                     Loading ...

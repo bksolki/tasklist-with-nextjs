@@ -8,10 +8,18 @@ export default async (req, res) => {
     });
     return;
   }
+  console.log("reqg", req.query);
 
-  //   const { taskType } = JSON.parse(req.body);
+  const { page = 0, limit = 10, isAsc = true, sortBy = "createdAt" } = req.query;
 
-  const { data } = await axios.get("https://todo-list-api-mfchjooefq-as.a.run.app/todo-list");
+  const { data } = await axios.get("https://todo-list-api-mfchjooefq-as.a.run.app/todo-list", {
+    params: {
+      offset: page,
+      limit,
+      isAsc,
+      sortBy,
+    },
+  });
   //   const task = await data.json();
   //   console.log("___________data", task);
   // return data;

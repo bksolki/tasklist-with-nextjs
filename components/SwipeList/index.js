@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { Box } from "@chakra-ui/react";
 
-function SwipeListItem({ name }) {
+const SwipeListItem = ({ name }) => {
   const listElementRef = useRef();
   const wrapperRef = useRef();
   const backgroundRef = useRef();
@@ -19,58 +19,58 @@ function SwipeListItem({ name }) {
     };
   });
 
-  function onDragStartMouse(evt) {
+  const onDragStartMouse = (evt) => {
     onDragStart(evt.clientX);
     window.addEventListener("mousemove", onMouseMove);
-  }
+  };
 
-  function onDragStartTouch(evt) {
+  const onDragStartTouch = (evt) => {
     const touch = evt.targetTouches[0];
     onDragStart(touch.clientX);
     window.addEventListener("touchmove", onTouchMove);
-  }
+  };
 
-  function onDragStart(clientX) {
+  const onDragStart = (clientX) => {
     draggedRef.current = true;
     dragStartXRef.current = clientX;
 
     listElementRef.current.className = "ListItem";
 
     requestAnimationFrame(updatePosition);
-  }
+  };
 
-  function updatePosition() {
+  const updatePosition = () => {
     if (draggedRef.current) {
       requestAnimationFrame(updatePosition);
     }
 
     listElementRef.current.style.transform = `translateX(${leftRef.current}px)`;
-  }
+  };
 
-  function onMouseMove(evt) {
+  const onMouseMove = (evt) => {
     const left = evt.clientX - dragStartXRef.current;
     if (left < 0) {
       leftRef.current = left;
     }
-  }
+  };
 
-  function onTouchMove(evt) {
+  const onTouchMove = (evt) => {
     const touch = evt.targetTouches[0];
     const left = touch.clientX - dragStartXRef.current;
     if (left < 0) {
       leftRef.current = left;
     }
-  }
+  };
 
-  function onDragEndMouse(evt) {
+  const onDragEndMouse = (evt) => {
     window.removeEventListener("mousemove", onMouseMove);
     onDragEnd();
-  }
+  };
 
-  function onDragEndTouch(evt) {
+  const onDragEndTouch = (evt) => {
     window.removeEventListener("touchmove", onTouchMove);
     onDragEnd();
-  }
+  };
 
   function onDragEnd() {
     if (draggedRef.current) {
@@ -156,6 +156,6 @@ function SwipeListItem({ name }) {
       </Box>
     </>
   );
-}
+};
 
 export default SwipeListItem;
