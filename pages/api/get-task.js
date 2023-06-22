@@ -10,7 +10,7 @@ export default async (req, res) => {
   }
   console.log("reqg", req.query);
 
-  const { page = 0, limit = 10, isAsc = true, sortBy = "createdAt" } = req.query;
+  const { page = 0, limit = 10, isAsc = true, sortBy = "createdAt", status } = req.query;
 
   const { data } = await axios.get("https://todo-list-api-mfchjooefq-as.a.run.app/todo-list", {
     params: {
@@ -18,11 +18,9 @@ export default async (req, res) => {
       limit,
       isAsc,
       sortBy,
+      status,
     },
   });
-  //   const task = await data.json();
-  //   console.log("___________data", task);
-  // return data;
 
   res.status(200).json(data);
 };

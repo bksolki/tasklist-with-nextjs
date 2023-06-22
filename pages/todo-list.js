@@ -3,17 +3,20 @@ import Router from "next/router";
 
 import { removeToken } from "../lib/token";
 import { useAppAuthContext } from "../context/authContext";
-import { Tabs, TabList, TabPanels, Tab, TabPanel, Box } from "@chakra-ui/react";
+import { Tabs, TabList, TabPanels, Tab, TabPanel, Box, Flex, Text, Button } from "@chakra-ui/react";
 import { TASKTYPE } from "../constants/task";
 import SwipeListItem from "../components/SwipeList";
 import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "axios";
+import { css } from "@emotion/react";
+
+const taskStatus = [TASKTYPE.TODO, TASKTYPE.DOING, TASKTYPE.DONE];
 
 export default function Dashboard() {
   const {
-    authInfo: { isAuth, user },
+    authInfo: { isAuth, user }
   } = useAppAuthContext();
-  const [taskType, setTaskType] = useState(TASKTYPE.TODO);
+  const [taskType, setTaskType] = useState(taskStatus[0]);
   const [taskList, setTaskList] = useState([]);
   const [isMoreTaskList, setIsMoreTaskList] = useState(false);
   const [page, setPage] = useState(0);
@@ -21,7 +24,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (isAuth) getTask();
-  }, [isAuth, taskType, page]);
+  }, [isAuth, page]);
+
+  useEffect(() => {
+    if (isAuth) {
+      getTask();
+    }
+  }, [taskType]);
 
   const redirectToLogin = () => {
     Router.push("/auth/login");
@@ -32,6 +41,13 @@ export default function Dashboard() {
 
     removeToken();
     redirectToLogin();
+  };
+
+  const handleChangeTabs = (index) => {
+    setTaskList([]);
+    setIsMoreTaskList(false);
+    setPage(0);
+    setTaskType(taskStatus[index]);
   };
 
   const loadFunc = () => {
@@ -48,7 +64,8 @@ export default function Dashboard() {
       params: {
         page,
         limit: 10,
-      },
+        status: taskType
+      }
     });
 
     console.log("resp", resp);
@@ -70,60 +87,68 @@ export default function Dashboard() {
   // console.log("taskList", taskList);
 
   return (
-    <>
-      <nav className="navbar navbar-light" style={{ backgroundColor: "#e3f2fd" }}>
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            Welcome {user?.username}!
-          </a>
-          <button
-            className="btn btn-info"
-            type="button"
-            style={{ color: "white", backgroundColor: "#0d6efd" }}
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
-      <h3>{user?.username}'s Profile</h3>
-      <Tabs backgroundColor="#ababab" zIndex={1}>
-        <TabList onChange={(index) => setTabIndex(index)}>
-          <Tab _selected={{ color: "white", bg: "blue.500" }}>To-do</Tab>
+    <Box padding="15px" height="100vh" width="100%" bg="linear-gradient(-135deg, #c850c0, #4158d0)">
+      <Flex width="100%" alignItems="revert" position="relative">
+        <Button
+          className="btn btn-info"
+          type="button"
+          bg="transparent"
+          padding="0 0 5px 0"
+          onClick={handleLogout}
+          position="absolute"
+          right={0}
+          top="-10px"
+          fontSize="14px"
+        >
+          Logout
+        </Button>
+      </Flex>
+
+      <Text fontSize={[25, 20, 18]}>Hi !{user?.username}</Text>
+      <Text marginBottom="15px">This is task management</Text>
+
+      <Tabs backgroundColor="#ababab" zIndex={1} onChange={handleChangeTabs}>
+        <TabList>
+          <Tab id={TASKTYPE.TODO} _selected={{ color: "white", bg: "blue.500" }}>
+            To-do
+          </Tab>
           <Tab _selected={{ color: "white", bg: "blue.500" }}>Doing</Tab>
           <Tab _selected={{ color: "white", bg: "blue.500" }}>Done</Tab>
         </TabList>
 
         <TabPanels>
-          <TabPanel>
-            <Box id="scrollableDiv" className="List" height="100%" maxHeight="calc(100vh - 182px)" overflowY="auto">
-              <InfiniteScroll
-                dataLength={taskList.length}
-                next={loadFunc}
-                hasMore={isMoreTaskList}
-                scrollableTarget="scrollableDiv"
-                scrollThreshold={1}
-                loader={
-                  <div className="loader" key={0}>
-                    Loading ...
-                  </div>
-                }
+          {taskStatus.map((status, index) => (
+            <TabPanel key={index}>
+              <Box
+                id="scrollableDiv"
+                className="List"
+                height="100%"
+                minHeight="calc(100vh - 182px)"
+                maxHeight="calc(100vh - 182px)"
+                overflowY="auto"
+                data-id="tab "
               >
-                {taskList?.map((tasks, index) => {
-                  // return <Text key={index}>{tasks.title}</Text>;
-                  return <SwipeListItem key={index} name={tasks.title} />;
-                })}
-              </InfiniteScroll>
-            </Box>
-          </TabPanel>
-          <TabPanel>
-            <p>two!</p>
-          </TabPanel>
-          <TabPanel>
-            <p>three!</p>
-          </TabPanel>
+                <InfiniteScroll
+                  dataLength={taskList.length}
+                  next={loadFunc}
+                  hasMore={isMoreTaskList}
+                  scrollableTarget="scrollableDiv"
+                  scrollThreshold={1}
+                  loader={
+                    <div className="loader" key={0}>
+                      Loading ...
+                    </div>
+                  }
+                >
+                  {taskList?.map((tasks, index) => {
+                    return <SwipeListItem key={index} name={tasks.title} />;
+                  })}
+                </InfiniteScroll>
+              </Box>
+            </TabPanel>
+          ))}
         </TabPanels>
       </Tabs>
-    </>
+    </Box>
   );
 }

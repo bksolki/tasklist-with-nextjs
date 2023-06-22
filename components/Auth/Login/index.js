@@ -44,39 +44,51 @@ export function LoginForm() {
   }
 
   return (
-    <Center>
+    <Center minW="250px">
       <form onSubmit={handleSubmit}>
-        <Text>Login</Text>
-        <Box>
-          <Text htmlFor="usernameInput">Username</Text>
-          <Input
-            type="text"
-            id="usernameInput"
-            autoComplete="on"
-            placeholder="Username"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </Box>
-        <Box>
-          <Text htmlFor="passwordInput">Password</Text>
-          <Input
-            type="password"
-            id="passwordInput"
-            placeholder="Password"
-            autoComplete="off"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Box>
-        <div>
-          <div>
+        <Box width={["calc(100vw - 30px)", 300, 350]} minW="250px" bg="#fbffff" padding="15px" borderRadius="10px">
+          <Text color="#585858" fontSize={[22, 20, 18]}>
+            Login
+          </Text>
+          <Box mt="10px">
+            <Text htmlFor="usernameInput" color="#585858" fontSize={[18, 16, 14]}>
+              Username
+            </Text>
+            <Input
+              type="text"
+              id="usernameInput"
+              autoComplete="on"
+              placeholder="Username"
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </Box>
+          <Box mt="10px">
+            <Text htmlFor="passwordInput" color="#585858" fontSize={[18, 16, 14]}>
+              Password
+            </Text>
+            <Input
+              type="password"
+              id="passwordInput"
+              placeholder="Password"
+              autoComplete="off"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Box>
+          {/* <Box>
+          <Box>
             <input type="checkbox" id="RememberMeInput" onChange={(e) => setRememberMe(e.target.checked)} />
             <label htmlFor="RememberMeInput">Remember Me</label>
-          </div>
-        </div>
-        {errorMessage && <Text role="alert">{errorMessage}</Text>}
-        <Button type="submit" disabled={isLoading}>
-          Login
-        </Button>
+          </Box>
+        </Box> */}
+          {errorMessage && (
+            <Text role="alert" color="red">
+              {errorMessage}
+            </Text>
+          )}
+          <Button w="100%" marginTop="15px" backgroundColor="#9adcf9" type="submit" disabled={isLoading}>
+            Login
+          </Button>
+        </Box>
       </form>
     </Center>
   );
