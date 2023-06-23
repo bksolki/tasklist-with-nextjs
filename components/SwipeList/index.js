@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
-import { Box } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 
-const SwipeListItem = ({ name }) => {
+const SwipeListItem = ({ id, name, date, description, deleteItem }) => {
   const listElementRef = useRef();
   const wrapperRef = useRef();
   const backgroundRef = useRef();
@@ -62,12 +62,12 @@ const SwipeListItem = ({ name }) => {
     }
   };
 
-  const onDragEndMouse = (evt) => {
+  const onDragEndMouse = () => {
     window.removeEventListener("mousemove", onMouseMove);
     onDragEnd();
   };
 
-  const onDragEndTouch = (evt) => {
+  const onDragEndTouch = () => {
     window.removeEventListener("touchmove", onTouchMove);
     onDragEnd();
   };
@@ -80,9 +80,8 @@ const SwipeListItem = ({ name }) => {
       if (leftRef.current < listElementRef.current.offsetWidth * threshold * -1) {
         leftRef.current = -listElementRef.current.offsetWidth * 2;
 
-        if (window.confirm("내역을 삭제하시겠습니까?")) {
-          //confirm delete
-          wrapperRef.current.style.maxHeight = 0;
+        if (window.confirm(`ต้องการลบงาน ${name} ใช่หรือไม่?`)) {
+          deleteItem(date, id);
         } else {
           leftRef.current = 0;
         }
@@ -96,65 +95,22 @@ const SwipeListItem = ({ name }) => {
   }
 
   return (
-    <>
-      {/* <Flex
-        position="relative"
-        transition="max-height 0.5s ease"
-        maxHeight="1000px"
-        transformOrigin="top"
-        overflow="hidden"
-        w="100%"
-        cursor="pointer"
-        fontSize="18px"
-        ref={wrapperRef}
+    <Box className="Wrapper" ref={wrapperRef} marginBottom="5px" key={id}>
+      <Box className="Background" ref={backgroundRef}>
+        <Text as="span">Delete</Text>
+      </Box>
+      <Box
+        className="BouncingListItem"
+        ref={listElementRef}
+        onMouseDown={onDragStartMouse}
+        onTouchStart={onDragStartTouch}
       >
-        <Flex
-          position="absolute"
-          w="100%"
-          h="100%"
-          zIndex="-1"
-          justifyContent="flex-end"
-          flexDirection="row"
-          alignItems="center"
-          backgroundColor="red"
-          boxSizing="border-box"
-          ref={backgroundRef}
-        >
-          <Text as="span">delete</Text>
-        </Flex>
-        <Flex
-          transition="transform 0.5s ease-out"
-          boxSizing="border-box"
-          alignItems="center"
-          backgroundColor="red"
-          w="100%"
-          h="100%"
-          ref={listElementRef}
-          onMouseDown={onDragStartMouse}
-          onTouchStart={onDragStartTouch}
-        >
-          <Box className="DataList">
-            <Text>{name}</Text>
-          </Box>
-        </Flex>
-      </Flex> */}
-
-      <Box className="Wrapper" ref={wrapperRef}>
-        <Box className="Background" ref={backgroundRef}>
-          <span>delete</span>
-        </Box>
-        <Box
-          className="BouncingListItem"
-          ref={listElementRef}
-          onMouseDown={onDragStartMouse}
-          onTouchStart={onDragStartTouch}
-        >
-          <Box className="DataList">
-            <Box>{name}</Box>
-          </Box>
+        <Box className="DataList">
+          <Text fontSize={[18, 18, 20]}>{name}</Text>
+          <Text fontSize={[14, 16, 18]}>{description}</Text>
         </Box>
       </Box>
-    </>
+    </Box>
   );
 };
 

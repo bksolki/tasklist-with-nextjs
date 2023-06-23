@@ -8,6 +8,7 @@ import { TASKTYPE } from "../constants/task";
 import SwipeListItem from "../components/SwipeList";
 import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const taskStatus = [TASKTYPE.TODO, TASKTYPE.DOING, TASKTYPE.DONE];
 
@@ -51,7 +52,21 @@ export default function Dashboard() {
     setTaskType(taskStatus[index]);
   };
 
-  const loadFunc = () => {
+  const handleDeleteTask = (date, id) => {
+    let taskListGroupFilter = [...taskListWithGroup];
+    let taskListFilter = [...taskList];
+    const indexGroup = taskListGroupFilter.map((group) => group.date).indexOf(date);
+
+    taskListGroupFilter[indexGroup].tasks = taskListGroupFilter[indexGroup].tasks.filter((task) => task.id !== id);
+    taskListFilter = taskListFilter.filter((task) => task.id !== id);
+
+    setTimeout(() => {
+      setTaskList(taskListFilter);
+      setTaskListWithGroup(taskListGroupFilter);
+    }, 550);
+  };
+
+  const loadMoreData = () => {
     if (loading) {
       return;
     }
@@ -69,9 +84,9 @@ export default function Dashboard() {
       }
     });
     const taskListAll = [...taskList, ...resp.data.tasks];
-    const groupByCreateDate = [...taskListWithGroup];
+
     // console.log("resp", resp);
-    // console.log("resp.data?.totalPages < page", resp.data?.totalPages, page);
+
     if (resp.data?.totalPages > page) {
       setIsMoreTaskList(true);
     } else {
@@ -79,7 +94,7 @@ export default function Dashboard() {
     }
 
     const groupsByCreatedAt = taskListAll.reduce((groups, task) => {
-      const date = task.createdAt;
+      const date = dayjs(task.createdAt).format("YYYY-MM-DD");
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -94,20 +109,14 @@ export default function Dashboard() {
       };
     });
 
-    // const groupedMap = groupBy(taskList, (v) => new Object(v.createdAt));
-    console.log("groupByCreateDate =", groupByCreateDate);
     setTaskList(taskListAll);
     setTaskListWithGroup(groupArrays);
     setLoading(false);
   };
 
   if (!isAuth) {
-    console.log("no auth returnn");
     return <></>;
   }
-
-  console.log("taskListWithGroup", taskListWithGroup);
-  console.log("taskListWithGroup.length", taskListWithGroup.length);
 
   return (
     <Box padding="15px" height="100vh" width="100%" bg="linear-gradient(-135deg, #c850c0, #4158d0)">
@@ -128,9 +137,9 @@ export default function Dashboard() {
       </Flex>
 
       <Text fontSize={[25, 20, 18]}>Hi !{user?.username}</Text>
-      <Text marginBottom="15px">This is task management</Text>
+      <Text marginBottom="15px">This is task management :D</Text>
 
-      <Tabs backgroundColor="#ababab" zIndex={1} onChange={handleChangeTabs}>
+      <Tabs backgroundColor="rgba(220,220,220,0.8)" borderRadius="6px" zIndex={1} onChange={handleChangeTabs}>
         <TabList>
           <Tab _selected={{ color: "white", bg: "blue.500" }}>To-do</Tab>
           <Tab _selected={{ color: "white", bg: "blue.500" }}>Doing</Tab>
@@ -151,10 +160,11 @@ export default function Dashboard() {
               >
                 <InfiniteScroll
                   dataLength={taskList.length}
-                  next={loadFunc}
+                  next={loadMoreData}
                   hasMore={isMoreTaskList}
                   scrollableTarget="scrollableDiv"
                   scrollThreshold={1}
+                  endMessage={<Text>test</Text>}
                   loader={
                     <div className="loader" key={0}>
                       Loading ...
@@ -163,10 +173,19 @@ export default function Dashboard() {
                 >
                   {taskListWithGroup?.map((group, index) => {
                     return (
-                      <Box>
-                        <Text>{group.date}</Text>
-                        {group.tasks.map((task, index) => {
-                          return <SwipeListItem key={index} name={task.title} />;
+                      <Box key={index}>
+                        {group.tasks?.length > 0 && <Text>{dayjs(group.date).format("DD MMM YY")}</Text>}
+                        {group.tasks?.map((task) => {
+                          return (
+                            <SwipeListItem
+                              key={task.id}
+                              id={task.id}
+                              name={task.title}
+                              date={group.date}
+                              description={task.description}
+                              deleteItem={handleDeleteTask}
+                            />
+                          );
                         })}
                       </Box>
                     );
