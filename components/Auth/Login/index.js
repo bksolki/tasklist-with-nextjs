@@ -4,42 +4,43 @@ import { loginUser } from "../../../lib/auth";
 import { removeToken } from "../../../lib/token";
 import { Input, Text, Center, Box, Button } from "@chakra-ui/react";
 import { useAppAuthContext } from "../../../context/authContext";
-import { css } from "@emotion/react";
+import { Spinner } from "@chakra-ui/react";
 
 export function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const { setAuthInfo } = useAppAuthContext();
 
   useEffect(() => {
     removeToken();
+    const recentLoginUsername = window.localStorage.getItem("recentLogin");
+    if (recentLoginUsername) setUsername(recentLoginUsername);
   }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
-      setIsLoading(true);
       const data = await loginUser(username, password);
       if (data.payload && data.payload.token) {
-        if (rememberMe) {
-          window.localStorage.setItem("token", data.payload.token);
-        } else {
-          window.sessionStorage.setItem("token", data.payload.token);
-        }
+        window.localStorage.setItem("token", data.payload.token);
+        window.localStorage.setItem("recentLogin", username);
+        window.sessionStorage.setItem("token", data.payload.token);
+
+        setAuthInfo({ isAuth: true, user: data.payload });
+        Router.push("/todo-list");
         setTimeout(() => {
-          setAuthInfo({ isAuth: true, user: data.payload });
-          Router.push("/todo-list");
-        }, 500);
+          setIsLoading(false);
+        }, 100);
       } else {
         setErrorMessage(data.message);
+        setIsLoading(false);
       }
     } catch (error) {
       console.log(error);
-    } finally {
       setIsLoading(false);
     }
   }
@@ -70,6 +71,7 @@ export function LoginForm() {
                 id="usernameInput"
                 autoComplete="on"
                 placeholder="Username"
+                value={username}
                 _placeholder={{ opacity: 1, color: "#ababab" }}
                 _focus={{ borderColor: "#fff" }}
                 _hover={{ borderColor: "#fff" }}
@@ -105,7 +107,7 @@ export function LoginForm() {
               </Text>
             )}
             <Button w="100%" marginTop="15px" backgroundColor="#b3e8ff3b" type="submit" disabled={isLoading}>
-              Login
+              {isLoading ? <Spinner marginRight="15px" /> : <Text>Login</Text>}
             </Button>
           </Box>
         </form>

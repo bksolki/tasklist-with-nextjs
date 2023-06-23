@@ -139,16 +139,35 @@ export default function Dashboard() {
       <Text fontSize={[25, 20, 18]}>Hi !{user?.username}</Text>
       <Text marginBottom="15px">This is task management :D</Text>
 
-      <Tabs backgroundColor="rgba(220,220,220,0.8)" borderRadius="6px" zIndex={1} onChange={handleChangeTabs}>
+      <Tabs
+        isFitted
+        variant="unstyled"
+        backgroundColor="rgba(220,220,220,0.8)"
+        borderRadius="6px"
+        zIndex={1}
+        onChange={handleChangeTabs}
+      >
         <TabList>
-          <Tab _selected={{ color: "white", bg: "blue.500" }}>To-do</Tab>
-          <Tab _selected={{ color: "white", bg: "blue.500" }}>Doing</Tab>
-          <Tab _selected={{ color: "white", bg: "blue.500" }}>Done</Tab>
+          <Tab
+            _selected={{ color: "#1f1f1f", bg: "rgb(255,255,255,0.5)", borderTopLeftRadius: "6px" }}
+            _focus={{ outline: "none" }}
+          >
+            To-do
+          </Tab>
+          <Tab _selected={{ color: "#1f1f1f", bg: "rgb(255,255,255,0.5)" }} _focus={{ outline: "none" }}>
+            Doing
+          </Tab>
+          <Tab
+            _selected={{ color: "#1f1f1f", bg: "rgb(255,255,255,0.5)", borderTopRightRadius: "6px" }}
+            _focus={{ outline: "none" }}
+          >
+            Done
+          </Tab>
         </TabList>
 
         <TabPanels>
           {taskStatus.map((status, index) => (
-            <TabPanel key={index}>
+            <TabPanel key={index} bg="rgb(255,255,255,0.5)">
               <Box
                 id="scrollableDiv"
                 className="List"
@@ -164,7 +183,6 @@ export default function Dashboard() {
                   hasMore={isMoreTaskList}
                   scrollableTarget="scrollableDiv"
                   scrollThreshold={1}
-                  endMessage={<Text>test</Text>}
                   loader={
                     <div className="loader" key={0}>
                       Loading ...
