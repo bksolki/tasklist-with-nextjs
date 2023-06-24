@@ -8,11 +8,11 @@ const AppAuthContext = createContext();
 export function AppAuth({ children }) {
   const [authInfo, setAuthInfo] = useState({
     isAuth: false,
-    username: "",
+    username: ""
   });
 
   useEffect(() => {
-    if (authInfo.isAuth === false) checkAuth();
+    checkAuth();
   }, []);
 
   const redirectToLogin = () => {
@@ -42,7 +42,7 @@ export function AppAuth({ children }) {
 
   const AuthContextValue = {
     authInfo,
-    setAuthInfo,
+    setAuthInfo
   };
 
   return <AppAuthContext.Provider value={AuthContextValue}>{children}</AppAuthContext.Provider>;

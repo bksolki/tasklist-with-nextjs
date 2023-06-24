@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Router from "next/router";
 import { loginUser } from "../../../lib/auth";
-import { removeToken } from "../../../lib/token";
 import { Input, Text, Center, Box, Button } from "@chakra-ui/react";
 import { useAppAuthContext } from "../../../context/authContext";
 import { Spinner } from "@chakra-ui/react";
@@ -11,10 +10,9 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { setAuthInfo } = useAppAuthContext();
+  const { authInfo, setAuthInfo } = useAppAuthContext();
 
   useEffect(() => {
-    removeToken();
     const recentLoginUsername = window.localStorage.getItem("recentLogin");
     if (recentLoginUsername) setUsername(recentLoginUsername);
   }, []);
@@ -34,7 +32,7 @@ export function LoginForm() {
         Router.push("/todo-list");
         setTimeout(() => {
           setIsLoading(false);
-        }, 100);
+        }, 500);
       } else {
         setErrorMessage(data.message);
         setIsLoading(false);

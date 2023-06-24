@@ -3,7 +3,7 @@ import Router from "next/router";
 
 import { removeToken } from "../lib/token";
 import { useAppAuthContext } from "../context/authContext";
-import { Tabs, TabList, TabPanels, Tab, TabPanel, Box, Flex, Text, Button } from "@chakra-ui/react";
+import { Tabs, TabList, TabPanels, Tab, TabPanel, Box, Flex, Text, Button, Spinner } from "@chakra-ui/react";
 import { TASKTYPE } from "../constants/task";
 import SwipeListItem from "../components/SwipeList";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -131,13 +131,19 @@ export default function Dashboard() {
           right={0}
           top="-10px"
           fontSize="14px"
+          _hover={{ background: "transparent" }}
+          color="#525252"
         >
           Logout
         </Button>
       </Flex>
 
-      <Text fontSize={[25, 20, 18]}>Hi !{user?.username}</Text>
-      <Text marginBottom="15px">This is task management :D</Text>
+      <Text fontSize={[25, 20, 18]} color="#fff">
+        Hi !{user?.username}
+      </Text>
+      <Text marginBottom="15px" color="#fff">
+        This is task management :D
+      </Text>
 
       <Tabs
         isFitted
@@ -165,10 +171,30 @@ export default function Dashboard() {
           </Tab>
         </TabList>
 
-        <TabPanels>
+        <TabPanels position="relative" h="calc(100vh - 150px)" bg="rgb(255,255,255,0.3)">
+          {loading & (taskList.length === 0) && (
+            <Box key="loading" position="relative">
+              <Flex
+                zIndex={5}
+                position="absolute"
+                height="100%"
+                width="100%"
+                minHeight="calc(100vh - 150px)"
+                maxHeight="calc(100vh - 150px)"
+                alignItems="center"
+                justifyContent="center"
+                bg="rgb(255,255,255,0.8)"
+              >
+                <Spinner marginRight="10px" marginBottom="-5px" />
+                <Text as="span">Loading..</Text>
+              </Flex>
+            </Box>
+          )}
+
           {taskStatus.map((status, index) => (
             <TabPanel key={index} bg="rgb(255,255,255,0.5)">
               <Box
+                zIndex={1}
                 id="scrollableDiv"
                 className="List"
                 height="100%"
@@ -182,11 +208,21 @@ export default function Dashboard() {
                   next={loadMoreData}
                   hasMore={isMoreTaskList}
                   scrollableTarget="scrollableDiv"
+                  endMessage={
+                    taskList.length > 0 && (
+                      <Box width="100%" textAlign="center" padding="15px">
+                        <Text as="span" color="#a5a5a5">
+                          No more tasks
+                        </Text>
+                      </Box>
+                    )
+                  }
                   scrollThreshold={1}
                   loader={
-                    <div className="loader" key={0}>
-                      Loading ...
-                    </div>
+                    <Box width="100%" textAlign="center" padding="30px">
+                      <Spinner marginRight="15px" />
+                      <Text as="span">Loading..</Text>
+                    </Box>
                   }
                 >
                   {taskListWithGroup?.map((group, index) => {

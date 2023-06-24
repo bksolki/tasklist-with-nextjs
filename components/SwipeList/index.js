@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { ChevronLeftIcon } from "@chakra-ui/icons";
 
 const SwipeListItem = ({ id, name, date, description, deleteItem }) => {
   const listElementRef = useRef();
@@ -80,7 +81,7 @@ const SwipeListItem = ({ id, name, date, description, deleteItem }) => {
       if (leftRef.current < listElementRef.current.offsetWidth * threshold * -1) {
         leftRef.current = -listElementRef.current.offsetWidth * 2;
 
-        if (window.confirm(`ต้องการลบงาน ${name} ใช่หรือไม่?`)) {
+        if (window.confirm(`Confirm to delete task: ${name}?`)) {
           deleteItem(date, id);
         } else {
           leftRef.current = 0;
@@ -99,17 +100,20 @@ const SwipeListItem = ({ id, name, date, description, deleteItem }) => {
       <Box className="Background" ref={backgroundRef}>
         <Text as="span">Delete</Text>
       </Box>
-      <Box
+      <Flex
         className="BouncingListItem"
         ref={listElementRef}
         onMouseDown={onDragStartMouse}
         onTouchStart={onDragStartTouch}
       >
-        <Box className="DataList">
+        <Box flex="1" className="DataList">
           <Text fontSize={[18, 18, 20]}>{name}</Text>
           <Text fontSize={[14, 16, 18]}>{description}</Text>
         </Box>
-      </Box>
+        <Box padding="8px">
+          <ChevronLeftIcon color="#a5a5a5" />
+        </Box>
+      </Flex>
     </Box>
   );
 };
