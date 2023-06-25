@@ -1,13 +1,13 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import TodoList from "./index";
-import { useAppAuthContext } from "../../context/authContext";
-import { removeToken } from "../../lib/token";
+import TodoList from "../pages/todo-list";
+import { useAppAuthContext } from "../context/authContext";
+import { removeToken } from "../lib/token";
 import axios from "axios";
 
 jest.mock("next/router", () => require("next-router-mock"));
-jest.mock("../../context/authContext");
-jest.mock("../../lib/token");
+jest.mock("../context/authContext");
+jest.mock("../lib/token");
 jest.mock("axios");
 
 describe("TodoList", () => {
