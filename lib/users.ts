@@ -1,14 +1,21 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 
-const jwtSecretKey = process.env.JWT_SECRET_KEY;
-const jwtExpire = Number(process.env.JWT_EXPIRE_SEC) || 3000; // 50min
+const jwtSecretKey: Secret | undefined = process.env.JWT_SECRET_KEY;
+const jwtExpire: number = Number(process.env.JWT_EXPIRE_SEC) || 3000; // 50min
 
-const saltRounds = 10;
-const salt = bcrypt.genSaltSync(saltRounds);
+const saltRounds: number = 10;
+const salt: string = bcrypt.genSaltSync(saltRounds);
+
+interface User {
+  username: string;
+  password: string;
+  email: string;
+  id: number;
+}
 
 // Just make data: Users list like DB
-let users = [
+let users: User[] = [
   {
     username: "test",
     password: "$2b$10$9z6V7Pr1l4MAdkvCXyfx1ex7WjZlMEn/HQVZdGYoPc3wvBYYGQJvC", // pwd: test
@@ -17,15 +24,15 @@ let users = [
   }
 ];
 // ----------------------------------------------------*
-export function findUser(username) {
+export function findUser(username: string) {
   return users.find((user) => user.username === username);
 }
 
-export function isUserExists(username) {
-  return findUser(username) || false;
+export function isUserExists(username: string): boolean {
+  return !!findUser(username);
 }
 // ----------------------------------------------------*
-export function login(username, password) {
+export function login(username: string, password: string) {
   if (!username || !password) {
     return {
       error: "WRONG_CREDENTIAL",
@@ -63,7 +70,7 @@ export function login(username, password) {
   };
 }
 
-export function whoAmI(username) {
+export function whoAmI(username: string) {
   if (!username || !isUserExists(username)) {
     return {
       error: "USER_NOT_FOUND",
@@ -82,19 +89,19 @@ export function whoAmI(username) {
   };
 }
 
-function hashPassword(password) {
+function hashPassword(password: string) {
   return bcrypt.hashSync(password, salt);
 }
 
-function checkPassword(currentHashedPassword, hashedPassword) {
+function checkPassword(currentHashedPassword: string, hashedPassword: string): boolean {
   return bcrypt.compare(currentHashedPassword, hashedPassword);
 }
 
-export function verifyToken(token) {
+export function verifyToken(token: string) {
   return jwt.verify(token, jwtSecretKey);
 }
 
-function errorMessage(error, message) {
+function errorMessage(error: string, message: string) {
   return {
     isSuccessful: false,
     error,

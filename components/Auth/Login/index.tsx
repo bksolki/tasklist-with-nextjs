@@ -5,19 +5,19 @@ import { Input, Text, Center, Box, Button } from "@chakra-ui/react";
 import { useAppAuthContext } from "../../../context/authContext";
 import { Spinner } from "@chakra-ui/react";
 
-export function LoginForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const { authInfo, setAuthInfo } = useAppAuthContext();
+export const LoginForm: React.FC = () => {
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const { setAuthInfo } = useAppAuthContext();
 
   useEffect(() => {
     const recentLoginUsername = window.localStorage.getItem("recentLogin");
     if (recentLoginUsername) setUsername(recentLoginUsername);
   }, []);
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
 
@@ -59,7 +59,7 @@ export function LoginForm() {
               Login
             </Text>
             <Box mt="10px">
-              <Text htmlFor="usernameInput" color="#2a2a2a" fontSize={[18, 16, 14]}>
+              <Text color="#2a2a2a" fontSize={[18, 16, 14]}>
                 Username
               </Text>
               <Input
@@ -77,7 +77,7 @@ export function LoginForm() {
               />
             </Box>
             <Box mt="10px">
-              <Text htmlFor="passwordInput" color="#2a2a2a" fontSize={[18, 16, 14]}>
+              <Text color="#2a2a2a" fontSize={[18, 16, 14]}>
                 Password
               </Text>
               <Input
@@ -93,12 +93,7 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Box>
-            {/* <Box>
-          <Box>
-            <input type="checkbox" id="RememberMeInput" onChange={(e) => setRememberMe(e.target.checked)} />
-            <label htmlFor="RememberMeInput">Remember Me</label>
-          </Box>
-        </Box> */}
+
             {errorMessage && (
               <Text role="alert" color="red">
                 {errorMessage}
@@ -112,4 +107,4 @@ export function LoginForm() {
       </Center>
     </Box>
   );
-}
+};

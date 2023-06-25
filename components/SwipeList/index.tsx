@@ -2,14 +2,22 @@ import React, { useRef, useEffect } from "react";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { ChevronLeftIcon } from "@chakra-ui/icons";
 
-const SwipeListItem = ({ id, name, date, description, deleteItem }) => {
-  const listElementRef = useRef();
-  const wrapperRef = useRef();
-  const backgroundRef = useRef();
+interface SwipeListItemProps {
+  id: string;
+  name: string;
+  date: string;
+  description: string;
+  deleteItem: (date: string, id: string) => void;
+}
 
-  const dragStartXRef = useRef(0);
-  const leftRef = useRef(0);
-  const draggedRef = useRef(false);
+const SwipeListItem: React.FC<SwipeListItemProps> = ({ id, name, date, description, deleteItem }) => {
+  const listElementRef = useRef<HTMLDivElement>();
+  const wrapperRef = useRef<HTMLDivElement>();
+  const backgroundRef = useRef<HTMLDivElement>();
+
+  const dragStartXRef = useRef<number>(0);
+  const leftRef = useRef<number>(0);
+  const draggedRef = useRef<boolean>(false);
 
   useEffect(() => {
     window.addEventListener("mouseup", onDragEndMouse);
@@ -31,7 +39,7 @@ const SwipeListItem = ({ id, name, date, description, deleteItem }) => {
     window.addEventListener("touchmove", onTouchMove);
   };
 
-  const onDragStart = (clientX) => {
+  const onDragStart = (clientX: number) => {
     draggedRef.current = true;
     dragStartXRef.current = clientX;
 

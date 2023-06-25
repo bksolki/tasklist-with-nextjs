@@ -3,12 +3,22 @@ import Router from "next/router";
 import { whoAmI } from "../lib/auth";
 import { getToken } from "../lib/token";
 
-const AppAuthContext = createContext();
+interface AuthInfo {
+  isAuth: boolean;
+  user?: any;
+}
 
-export function AppAuth({ children }) {
-  const [authInfo, setAuthInfo] = useState({
+interface AppAuthContextValue {
+  authInfo: AuthInfo;
+  setAuthInfo: React.Dispatch<React.SetStateAction<AuthInfo>>;
+}
+
+const AppAuthContext = createContext<AppAuthContextValue | undefined>(undefined);
+
+const AppAuthProvider = ({ children }) => {
+  const [authInfo, setAuthInfo] = useState<AuthInfo>({
     isAuth: false,
-    username: ""
+    user: {}
   });
 
   useEffect(() => {
@@ -46,12 +56,14 @@ export function AppAuth({ children }) {
   };
 
   return <AppAuthContext.Provider value={AuthContextValue}>{children}</AppAuthContext.Provider>;
-}
+};
 
-export function useAppAuthContext() {
+const useAppAuthContext = () => {
   const context = useContext(AppAuthContext);
   if (context === undefined) {
     throw new Error("useAppAuthContext must use under AppAuthContext");
   }
   return context;
-}
+};
+
+export { AppAuthProvider, useAppAuthContext };

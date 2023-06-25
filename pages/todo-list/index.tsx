@@ -1,50 +1,46 @@
 import React, { useEffect, useState } from "react";
 import Router from "next/router";
 
-import { removeToken } from "../lib/token";
-import { useAppAuthContext } from "../context/authContext";
+import { removeToken } from "../../lib/token";
+import { useAppAuthContext } from "../../context/authContext";
 import { Tabs, TabList, TabPanels, Tab, TabPanel, Box, Flex, Text, Button, Spinner } from "@chakra-ui/react";
-import { TASKTYPE } from "../constants/task";
-import SwipeListItem from "../components/SwipeList";
+import { TASKTYPE } from "../../constants/task";
+import SwipeListItem from "../../components/SwipeList";
 import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "axios";
 import dayjs from "dayjs";
 
 const taskStatus = [TASKTYPE.TODO, TASKTYPE.DOING, TASKTYPE.DONE];
 
-export default function Dashboard() {
+export default function TodoList() {
   const {
     authInfo: { isAuth, user }
   } = useAppAuthContext();
-  const [taskType, setTaskType] = useState(taskStatus[0]);
-  const [taskList, setTaskList] = useState([]);
-  const [taskListWithGroup, setTaskListWithGroup] = useState([]);
+  const [taskType, setTaskType] = useState<string>(taskStatus[0]);
+  const [taskList, setTaskList] = useState<any[]>([]);
+  const [taskListWithGroup, setTaskListWithGroup] = useState<any[]>([]);
   const [isMoreTaskList, setIsMoreTaskList] = useState(false);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuth) getTaskData();
-  }, [isAuth, page]);
-
-  useEffect(() => {
     if (isAuth) {
       getTaskData();
     }
-  }, [taskType]);
+  }, [taskType, isAuth, page]);
 
   const redirectToLogin = () => {
     Router.push("/auth/login");
   };
 
-  const handleLogout = (e) => {
+  const handleLogout = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     removeToken();
     redirectToLogin();
   };
 
-  const handleChangeTabs = (index) => {
+  const handleChangeTabs = (index: number) => {
     setTaskList([]);
     setTaskListWithGroup([]);
     setIsMoreTaskList(false);
@@ -52,7 +48,7 @@ export default function Dashboard() {
     setTaskType(taskStatus[index]);
   };
 
-  const handleDeleteTask = (date, id) => {
+  const handleDeleteTask = (date: string, id: string) => {
     let taskListGroupFilter = [...taskListWithGroup];
     let taskListFilter = [...taskList];
     const indexGroup = taskListGroupFilter.map((group) => group.date).indexOf(date);
@@ -83,17 +79,17 @@ export default function Dashboard() {
         status: taskType
       }
     });
-    const taskListAll = [...taskList, ...resp.data.tasks];
+    const taskListAll = [...taskList, ...(resp?.data?.tasks ?? [])];
 
     // console.log("resp", resp);
 
-    if (resp.data?.totalPages > page) {
+    if (resp?.data?.totalPages > page) {
       setIsMoreTaskList(true);
     } else {
       setIsMoreTaskList(false);
     }
 
-    const groupsByCreatedAt = taskListAll.reduce((groups, task) => {
+    const groupsByCreatedAt: { [key: string]: any[] } = taskListAll.reduce((groups, task) => {
       const date = dayjs(task.createdAt).format("YYYY-MM-DD");
       if (!groups[date]) {
         groups[date] = [];
@@ -133,6 +129,7 @@ export default function Dashboard() {
           fontSize="14px"
           _hover={{ background: "transparent" }}
           color="#525252"
+          data-testid="logout"
         >
           Logout
         </Button>
@@ -153,7 +150,7 @@ export default function Dashboard() {
         zIndex={1}
         onChange={handleChangeTabs}
       >
-        <TabList>
+        <TabList data-testid="tab menu">
           <Tab
             _selected={{ color: "#1f1f1f", bg: "rgb(255,255,255,0.5)", borderTopLeftRadius: "6px" }}
             _focus={{ outline: "none" }}
@@ -172,7 +169,7 @@ export default function Dashboard() {
         </TabList>
 
         <TabPanels position="relative" h="calc(100vh - 150px)" bg="rgb(255,255,255,0.3)">
-          {loading & (taskList.length === 0) && (
+          {loading && taskList.length === 0 && (
             <Box key="loading" position="relative">
               <Flex
                 zIndex={5}
@@ -201,7 +198,7 @@ export default function Dashboard() {
                 minHeight="calc(100vh - 182px)"
                 maxHeight="calc(100vh - 182px)"
                 overflowY="auto"
-                data-id={`tab ${status}`}
+                data-testid={`tab ${status}`}
               >
                 <InfiniteScroll
                   dataLength={taskList.length}
