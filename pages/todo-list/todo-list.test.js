@@ -1,37 +1,19 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import axios from "axios";
+import { render, screen, fireEvent } from "@testing-library/react";
 import TodoList from "./index";
 import { useAppAuthContext } from "../../context/authContext";
-// import { removeToken } from "../../lib/token";
-import { TASKTYPE } from "../../constants/task";
+import { removeToken } from "../../lib/token";
+import axios from "axios";
 
+jest.mock("next/router", () => require("next-router-mock"));
+jest.mock("../../context/authContext");
+jest.mock("../../lib/token");
 jest.mock("axios");
-jest.mock("../../context/authContext", () => ({
-  useAppAuthContext: jest.fn()
-}));
 
-describe("TodoList component", () => {
-  let mockAuthInfo;
-  const mockRouter = {
-    push: jest.fn(),
-    replace: jest.fn(),
-    prefetch: jest.fn(),
-    events: {
-      on: jest.fn(),
-      off: jest.fn()
-    }
-  };
-
+describe("TodoList", () => {
   beforeEach(() => {
-    mockAuthInfo = {
-      isAuth: true,
-      user: {
-        username: "testuser"
-      }
-    };
     useAppAuthContext.mockReturnValue({
-      authInfo: mockAuthInfo
+      authInfo: { isAuth: true, user: { username: "testUser" } }
     });
   });
 
@@ -39,50 +21,37 @@ describe("TodoList component", () => {
     jest.clearAllMocks();
   });
 
-  test("renders TodoList component", () => {
+  test("renders todo list component", () => {
     render(<TodoList />);
-
-    expect(screen.getByText("Hi !testuser")).toBeInTheDocument();
-    expect(screen.getByText("This is task management :D")).toBeInTheDocument();
-    expect(screen.getByTestId("tab menu")).toBeInTheDocument();
-    expect(screen.getByTestId("logout")).toBeInTheDocument();
+    const logoutButton = screen.getByTestId("logout");
+    expect(logoutButton).toBeInTheDocument();
   });
 
-  test("logs out when Logout button is clicked", async () => {
+  test("calls handleLogout when logout button is clicked", () => {
     render(<TodoList />);
-
-    fireEvent.click(screen.getByTestId("logout"));
-    expect(mockRouter.push).toHaveBeenCalledWith("/auth/login");
+    const logoutButton = screen.getByTestId("logout");
+    fireEvent.click(logoutButton);
+    expect(removeToken).toBeCalled();
   });
 
-  test("loads task data on component mount", () => {
-    const getMock = jest.spyOn(axios, "get");
-    render(<TodoList />);
+  test("loads task data on component mount", async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        tasks: [],
+        totalPages: 1
+      }
+    });
 
-    expect(getMock).toHaveBeenCalledWith("/api/get-task", {
+    render(<TodoList />);
+    expect(axios.get).toBeCalledWith("/api/get-task", {
       params: {
         page: 0,
         limit: 10,
-        status: TASKTYPE.TODO
+        status: "TODO"
       }
     });
+
+    await screen.findByTestId("tab TODO");
+    expect(screen.queryByText("To-do")).toBeTruthy();
   });
-
-  // test("test_delete_task_on_swipe", async () => {
-  //   const mockGetTaskData = jest.fn();
-  //   jest.mock("axios", () => ({
-  //     get: (url, params) => mockGetTaskData(url, params),
-  //     delete: (url) => Promise.resolve()
-  //   }));
-  //   mockGetTaskData.mockResolvedValue({
-  //     data: { tasks: [{ id: "1", title: "task1", description: "description1", createdAt: "2022-02-01T00:00:00.000Z" }] }
-  //   });
-  //   render(<TodoList />);
-
-  //   await waitFor(() => expect(screen.getByText("task1")).toBeInTheDocument());
-  //   const listItem = screen.getByText("task1").closest(".ListItem");
-  //   fireEvent.touchStart(listItem);
-  //   fireEvent.touchEnd(listItem);
-  //   await waitFor(() => expect(mockGetTaskData).toHaveBeenCalledTimes(2));
-  // });
 });

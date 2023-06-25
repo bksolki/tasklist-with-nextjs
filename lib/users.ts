@@ -109,10 +109,14 @@ const hashPassword = (password: string) => {
   return bcrypt.hashSync(password, salt);
 };
 
-const checkPassword = (currentHashedPassword: string, hashedPassword: string): boolean => {
+const checkPassword = (currentHashedPassword: string, hashedPassword: string): Promise<boolean> => {
   return bcrypt.compare(currentHashedPassword, hashedPassword);
 };
 
 export const verifyToken = (token: string) => {
-  return jwt.verify(token, jwtSecretKey);
+  try {
+    return jwt.verify(token, jwtSecretKey);
+  } catch (error) {
+    throw new Error("Invalid token");
+  }
 };
