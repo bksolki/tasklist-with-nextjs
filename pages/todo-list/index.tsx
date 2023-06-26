@@ -115,7 +115,14 @@ export default function TodoList() {
   }
 
   return (
-    <Box padding="15px" height="100vh" width="100%" bg="linear-gradient(-135deg, #c850c0, #4158d0)">
+    <Box
+      padding="15px"
+      height="100vh"
+      minWidth="330px"
+      width="100%"
+      overflow="auto"
+      bg="linear-gradient(-135deg, #c850c0, #4158d0)"
+    >
       <Flex width="100%" alignItems="revert" position="relative">
         <Button
           className="btn btn-info"
@@ -149,6 +156,7 @@ export default function TodoList() {
         borderRadius="6px"
         zIndex={1}
         onChange={handleChangeTabs}
+        minWidth="330px"
       >
         <TabList data-testid="tab menu">
           <Tab
